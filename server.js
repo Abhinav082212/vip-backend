@@ -13,7 +13,7 @@ function queryDB(sql, values) {
     const connection = mysql.createConnection({
       host: process.env.DB_HOST || 'sql12.freesqldatabase.com',
       user: process.env.DB_USER || 'sql12802679',
-      password: process.env.DB_PASS || 'YOUR_DB_PASSWORD', // replace locally or use env vars
+      password: process.env.DB_PASS || '4MILvy77BL', // replace locally or use env vars
       database: process.env.DB_NAME || 'sql12802679',
       port: process.env.DB_PORT || 3306,
       connectTimeout: 10000
@@ -107,3 +107,4 @@ app.get('/health', (req, res) => res.send({ status: 'ok' }));
 // start
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`VIP server listening on port ${PORT}`));
+
