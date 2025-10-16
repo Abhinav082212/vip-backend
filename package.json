@@ -1,0 +1,26 @@
+{
+  "name": "vip_scanner",
+  "version": "1.0.0",
+  "description": "VIP QR Scanner project for welcoming guests like Principal, HOD, Staff, etc.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "qr",
+    "scanner",
+    "vip",
+    "express",
+    "mysql",
+    "render-deploy"
+  ],
+  "author": "Abhinav",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.9.7",
+    "qrcode": "^1.5.3"
+  }
+}
