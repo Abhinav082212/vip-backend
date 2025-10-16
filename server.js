@@ -7,13 +7,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ---- Helper to run a single query (new connection each time) ----
 function queryDB(sql, values) {
   return new Promise((resolve, reject) => {
     const connection = mysql.createConnection({
       host: process.env.DB_HOST || 'sql12.freesqldatabase.com',
       user: process.env.DB_USER || 'sql12802679',
-      password: process.env.DB_PASS || '4MILvy77BL', // replace locally or use env vars
+      password: process.env.DB_PASS || '4MILvy77BL',
       database: process.env.DB_NAME || 'sql12802679',
       port: process.env.DB_PORT || 3306,
       connectTimeout: 10000
@@ -30,58 +29,21 @@ function queryDB(sql, values) {
   });
 }
 
-// ---- Endpoint to validate VIP by name+role or name only ----
+// Validate VIP by serial_number only
 app.post('/vipvalidate', async (req, res) => {
-  // Accept either { name, role } or a single `qr` string (scanned string)
-  const body = req.body || {};
-  let name = (body.name || '').trim();
-  let role = (body.role || '').trim();
-  const qr = (body.qr || '').trim();
-  const raw = (body.code || body.qr_code || '').trim(); // backward compat
-
-  // If client sent a raw scanned string (code), try to parse JSON:
-  if (!name && raw) {
-    try {
-      const parsed = JSON.parse(raw);
-      name = (parsed.name || '').trim();
-      role = (parsed.role || '').trim();
-    } catch (e) {
-      // treat raw as plain name
-      if (!name) name = raw;
-    }
-  }
-
-  // If qr field sent
-  if (!name && qr) {
-    try {
-      const parsed = JSON.parse(qr);
-      name = (parsed.name || '').trim();
-      role = (parsed.role || '').trim();
-    } catch (e) {
-      name = qr;
-    }
-  }
-
-  if (!name) return res.send({ status: 'error', msg: 'Name missing from QR' });
+  const serial = (req.body.serial || req.body.qr || '').trim();
+  if (!serial) return res.send({ status: 'error', msg: 'Serial number missing' });
 
   try {
-    // 1) If role provided => lookup both name+role
-    let rows;
-    if (role) {
-      rows = await queryDB('SELECT * FROM vip_guests WHERE name = ? AND role = ?', [name, role]);
-    } else {
-      // 2) If role not provided => lookup by name only (case-insensitive)
-      rows = await queryDB('SELECT * FROM vip_guests WHERE name = ?', [name]);
-    }
-
+    const rows = await queryDB('SELECT * FROM vip_guests WHERE serial_number = ?', [serial]);
     if (!rows || rows.length === 0) {
-      return res.send({ status: 'invalid', msg: '❌ VIP not found' });
+      return res.send({ status: 'invalid', msg: '❌ Serial not found' });
     }
 
     const guest = rows[0];
 
     if (guest.entered) {
-      return res.send({ status: 'used', msg: `❌ ${guest.name} (${guest.role}) — Already scanned` });
+      return res.send({ status: 'used', msg: `❌ Serial ${serial} — Already scanned` });
     }
 
     // mark as entered
@@ -89,22 +51,15 @@ app.post('/vipvalidate', async (req, res) => {
 
     return res.send({
       status: 'ok',
-      msg: `🎉 Welcome ${guest.name}! The AIML Department warmly welcomes you, our respected ${guest.role}!`
+      msg: `🎉 CSE[AI&ML] Welcomes! you to freshers party ${serial} is valid.`
     });
-
   } catch (err) {
     console.error('DB error:', err && err.message ? err.message : err);
     return res.send({ status: 'error', msg: 'Database error' });
   }
 });
 
-// health
 app.get('/health', (req, res) => res.send({ status: 'ok' }));
 
-// serve static if you want (not required)
-// app.use(express.static(__dirname));
-
-// start
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`VIP server listening on port ${PORT}`));
-
