@@ -51,7 +51,7 @@ app.post('/vipvalidate', async (req, res) => {
 
     return res.send({
       status: 'ok',
-      msg: `🎉 CSE[AI&ML] Welcomes! you to freshers party ${serial} is valid.`
+      msg: `🎉 CSE[AI&ML] Welcomes! you to Tech Fiesta event 2025 ${serial} is valid.`
     });
   } catch (err) {
     console.error('DB error:', err && err.message ? err.message : err);
@@ -63,3 +63,4 @@ app.get('/health', (req, res) => res.send({ status: 'ok' }));
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`VIP server listening on port ${PORT}`));
+
